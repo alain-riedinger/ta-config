@@ -46,7 +46,7 @@ Works currently for the *BGR color codes* like `0xBBGGRR`
 When the cursor is in such word like a color code, it automatically underlines the word with the color corresponding to the color code.
 Very useful when you try to define the color set of a theme.
 
-![Color hint sample](./modules/color_hint/TextAdept-Color hint.png)
+![Color hint sample](https://github.com/alain-riedinger/ta-config/blob/master/modules/color_hint/TextAdept-Color%20hint.png)
 
 ## French language helpers
 
