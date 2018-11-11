@@ -12,7 +12,9 @@ Following configurations are available:
 - an adapted markdown lexer
 - a dynamic highlighting of the current word or selection
 - a color hint for color codes
+- some helpers for the search operations (initialization, shortcuts)
 - some helpers for french language (for text and markdown edition)
+- integration of the distraction free mode
 
 ## Favourite files manager
 
@@ -44,9 +46,25 @@ Works currently for the *BGR color codes* like `0xBBGGRR`
 When the cursor is in such word like a color code, it automatically underlines the word with the color corresponding to the color code.
 Very useful when you try to define the color set of a theme.
 
+![Color hint sample](./modules/color_hint/TextAdept-Color hint.png)
+
 ## French language helpers
 
 French keyboard layout is miserable when it comes to type code, so I adapted it a little bit:
 - "²" for a backquote
 - "Ctrl+²" enters 3 back quotes for a code block
 - the single quote is not automatically doubled, because in french it is often used in natural language
+
+## Search helpers
+
+Some helpers added to ease the search operations:
+- "Ctrl-F3" searches for the next current selection or current word
+- "Shift-Ctrl-F3" searches for the previous current selection or current word
+- "Ctrl-F" displays the search strip initialized with the current selection or the current word
+
+## Distraction free mode
+
+Distraction free mode is composed of:
+- a full full screen extension
+- menu bar is hidden
+This functionality works as a toggle from and to this mode.

@@ -23,7 +23,7 @@ require('french_helpers')
 require('highlighting')
 require('color_hint')
 require('search')
---require('ctags')
+require('distraction_free')
 
 --[[---------------------------------------------------------------------------------------
 Set theming
@@ -42,6 +42,7 @@ Set properties
 buffer.property['key.special.square'] = 'false'
 buffer.property['highlighting.identical.text'] = 1
 buffer.property['highlighting.color.hint'] = 1
+buffer.property['track.nb.min.lines'] = 10
 
 -- Editor settings
 buffer.caret_style = buffer.CARETSTYLE_LINE
@@ -60,14 +61,24 @@ textadept.editing.auto_pairs = {[40] = ')', [91] = ']', [123] = '}', [34] = '"'}
 textadept.editing.typeover_chars = {[41] = 1, [93] = 1, [125] = 1, [34] = 1}
 
 --[[---------------------------------------------------------------------------------------
-Only change key for markdown and text
+Special behviours for markdown and text lexers
 ]]
 events.connect(events.LEXER_LOADED, function(lexer)
   if lexer == 'markdown' or
      lexer == 'text' then
+     -- Request adapted behaviour for square key
     buffer.property['key.special.square'] = 'true'
+    
+    -- Activate wrap mode
+    buffer.wrap_mode = buffer.WRAP_WHITESPACE
+    buffer.wrap_visual_flags = buffer.WRAPVISUALFLAG_MARGIN
   else
+    -- Set normal behaviour for square key
     buffer.property['key.special.square'] = 'false'
+
+    -- Reset wrap mode
+    buffer.wrap_mode = buffer.WRAP_NONE
+    buffer.wrap_visual_flags = buffer.WRAPVISUALFLAG_NONE
   end
 end)
 
@@ -147,9 +158,18 @@ keys['cf'] = function()
   Search.preload_search_ui()
 end
 
--- Ctrl+F3 : searches for current word, if any
+-- Ctrl+F3 : searches for next occurence of current word, if any
+-- Ctrl+Shift+F3 : searches for previous occurence of current word, if any
 keys['cf3'] = function()
-  Search.search_current_word()
+  Search.search_current_word(true)
+end
+keys['csf3'] = function()
+  Search.search_current_word(false)
+end
+
+-- F11 : switch to and from distraction free mode
+keys['f11'] = function()
+  DistractionFree.toggle()
 end
 
 -- Sample shortcut: here for Ctrl+F12
