@@ -81,6 +81,19 @@ function Util.get_current_word()
   return buffer.text_range(buffer, word_start, word_end)
 end
 
+-- Returns the current word, ir where the cursor is located
+function Util.quote_text(text_start, text_end)
+  local char = buffer.text_range(buffer, text_end, text_end+1)
+  if char ~= '"' then
+    buffer.insert_text(buffer, text_end, '"')
+  end
+  char = buffer.text_range(buffer, text_start-1, text_start)
+  if char ~= '"' then
+    -- Add at last the quote to not move the text
+    buffer.insert_text(buffer, text_start, '"')
+  end
+end
+
 --[[
 Check whether text is a colour code
 There are 2 possible formats:
