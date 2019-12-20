@@ -14,6 +14,7 @@ Following configurations are available:
 - a color hint for color codes
 - some helpers for the search operations (initialization, shortcuts)
 - some helpers for french language (for text and markdown edition)
+- some helpers for editing (for markdown language)
 - integration of the distraction free mode
 
 ## Favourite files manager
@@ -35,6 +36,7 @@ Some enhancements / modifications to original markdown lexer of TextAdept
   (!) idea
   (?) question
   => conclusion
+  -> action
 
 ## Automatical dynamic highlighting
 
@@ -51,16 +53,21 @@ Very useful when you try to define the color set of a theme.
 ## French language helpers
 
 French keyboard layout is miserable when it comes to type code, so I adapted it a little bit:
-- "²" for a backquote
-- "Ctrl+²" enters 3 back quotes for a code block
-- the single quote is not automatically doubled, because in french it is often used in natural language
+- **²** for a backquote
+- **Ctrl+²** enters 3 back quotes for a code block
+- **'** the single quote is not automatically doubled, because in french it is often used in natural language
 
 ## Search helpers
 
 Some helpers added to ease the search operations:
-- "Ctrl-F3" searches for the next current selection or current word
-- "Shift-Ctrl-F3" searches for the previous current selection or current word
-- "Ctrl-F" displays the search strip initialized with the current selection or the current word
+- **Ctrl+F3** searches for the next current selection or current word
+- **Shift+Ctrl+F3** searches for the previous current selection or current word
+- **Ctrl+F** displays the search strip initialized with the current selection or the current word
+
+## Text edition helpers
+
+Some helpers added to ease text edition operations:
+- **Ctrl+"** quotes the selected text, if any, or the current word
 
 ## Distraction free mode
 
