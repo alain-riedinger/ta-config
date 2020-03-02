@@ -1,5 +1,8 @@
 -- Copyright 2006-2018 Mitchell mitchell.att.foicica.com. See License.txt.
 -- Markdown LPeg lexer.
+--[[
+[An introduction to Parsing Expression Grammars with LPeg](http://leafo.net/guides/parsing-expression-grammars.html)
+]]
 
 local lexer = require('lexer')
 local token, word_match = lexer.token, lexer.word_match
@@ -44,11 +47,12 @@ lex:add_rule('list', token('list', lexer.starts_line(S(' \t')^0 * (S('*+-') +
                                    S(' \t')))
 lex:add_style('list', lexer.STYLE_CONSTANT)
 
-lex:add_rule('blockcode',
-             token('code', lexer.starts_line(P(' ')^4 + P('\t')) * -P('<') *
-                           lexer.nonnewline^0 * lexer.newline^-1))
---lex:add_style('code', lexer.STYLE_EMBEDDED..',eolfilled')
-lex:add_style('code', 'fore:$(color.cyan),back:$(color.base01),eolfilled')
+-- I don't like style based on indentation... it ruins my layout
+--lex:add_rule('blockcode',
+             --token('code', lexer.starts_line(P(' ')^4 + P('\t')) * -P('<') *
+                           --lexer.nonnewline^0 * lexer.newline^-1))
+----lex:add_style('code', lexer.STYLE_EMBEDDED..',eolfilled')
+--lex:add_style('code', 'fore:$(color.cyan),back:$(color.base01),eolfilled')
 
 lex:add_rule('hr',
              token('hr',
@@ -85,7 +89,8 @@ lex:add_rule('link',
                             (S(' \t')^1 *
                              lexer.delimited_range('"', false, true))^-1 * ')' +
                             S(' \t')^0 * lexer.delimited_range('[]')) +
-                           P('http://') * (lexer.any - lexer.space)^1))
+                           P('http://') * (lexer.any - lexer.space)^1 +
+                           P('https://') * (lexer.any - lexer.space)^1))
 lex:add_style('link', 'fore:$(color.blue),underlined')
 
 lex:add_rule('strong', token('strong', P('**') * (lexer.any - '**')^0 *
@@ -96,10 +101,13 @@ lex:add_rule('strong', token('strong', P('**') * (lexer.any - '**')^0 *
 lex:add_style('strong', 'fore:$(color.yellow),bold')
 lex:add_rule('em', token('em', lexer.delimited_range('*', true) +
                                lexer.delimited_range('_', true)))
+--lex:add_rule('em', token('em', (#lexer.space * lexer.delimited_range('*', true) * #lexer.space) +
+                               --(#lexer.space * lexer.delimited_range('_', true) * #lexer.space)))
 --lex:add_style('em', 'italics')
 lex:add_style('em', 'fore:$(color.yellow),italics')
-lex:add_rule('code', token('code', P('``') * (lexer.any - '``')^0 * P('``')^-1 +
+lex:add_rule('code', token('code', P('```') * (lexer.any - '```')^0 * P('```')^-1 +
                                    lexer.delimited_range('`', true, true)))
+lex:add_style('code', 'fore:$(color.cyan),back:$(color.base01),eolfilled')
 
 -- Embedded HTML.
 local html = lexer.load('html')
@@ -124,11 +132,15 @@ lex:add_style('strikeout', 'fore:$(color.base02)')
 lex:add_rule('conclusion', token('conclusion', P('=>')))
 lex:add_style('conclusion', 'fore:$(color.green),bold')
 --lex:add_style('conclusion', 'back:%(color.green),fore:%(color.base07),bold')
+-- -> action
+lex:add_rule('action', token('action', P('->')))
+lex:add_style('action', 'fore:$(color.cyan),bold')
+--lex:add_style('action', 'back:%(color.cyan),fore:%(color.base07),bold')
 -- /!\ warning
 lex:add_rule('warning', token('warning', P('/!\\')))
 lex:add_style('warning', 'fore:$(color.red),bold')
 --lex:add_style('warning', 'back:%(color.red),fore:%(color.base07),bold')
--- /!\ idea
+-- (!) idea (?) question
 lex:add_rule('idea', token('idea', P('(!)') + P('(?)')))
 lex:add_style('idea', 'fore:$(color.cyan),bold')
 --lex:add_style('idea', 'back:%(color.blue),fore:%(color.base07),bold')
