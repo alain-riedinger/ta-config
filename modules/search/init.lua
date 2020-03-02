@@ -27,11 +27,15 @@ end
 --[[
 Search for current word
 ]]
-function Search.search_current_word()
+function Search.search_current_word(next)
   -- Retrieve the current word, if any
   cur_text = Util.get_current_word()
   if cur_text == '' then return end
   -- Search for the next occurence of the current word, if any
   ui.find.find_entry_text = cur_text
-  ui.find.find_next()
+  if next then
+    ui.find.find_next()
+  else
+    ui.find.find_prev()
+  end
 end
