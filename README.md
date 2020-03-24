@@ -37,6 +37,8 @@ Some enhancements / modifications to original markdown lexer of TextAdept
   (?) question
   => conclusion
   -> action
+  [ ] todo
+  [x] done
 
 ## Automatical dynamic highlighting
 

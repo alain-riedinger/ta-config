@@ -144,5 +144,11 @@ lex:add_style('warning', 'fore:$(color.red),bold')
 lex:add_rule('idea', token('idea', P('(!)') + P('(?)')))
 lex:add_style('idea', 'fore:$(color.cyan),bold')
 --lex:add_style('idea', 'back:%(color.blue),fore:%(color.base07),bold')
+-- [ ] to do
+lex:add_rule('todo', token('todo', P('[ ]')))
+lex:add_style('todo', 'fore:$(color.orange),bold')
+-- [x] done
+lex:add_rule('done', token('done', P('[x]')))
+lex:add_style('done', 'fore:$(color.cyan),bold')
 
 return lex
