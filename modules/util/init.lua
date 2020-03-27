@@ -73,7 +73,7 @@ function Util.editor_mark_text_colour(style_number, start, length, color)
   buffer.indicator_current = current_mark_number
 end
 
--- Returns the current word, ir where the cursor is located
+-- Returns the current word, where the cursor is located
 function Util.get_current_word()
   local current_pos = buffer.current_pos
   local word_start = buffer.word_start_position(buffer, current_pos, true)
@@ -81,17 +81,53 @@ function Util.get_current_word()
   return buffer.text_range(buffer, word_start, word_end)
 end
 
--- Returns the current word, ir where the cursor is located
-function Util.quote_text(text_start, text_end)
+-- Returns the start and end position of the current selected text
+-- or the current worrd, if no selection
+function Util.get_current_sel_pos()
+  local sel_start = buffer.selection_start
+  local sel_end = buffer.selection_end
+  if sel_start < sel_end then
+    -- There is a selection: return its coordinates
+    return sel_start, sel_end
+  else
+    -- There is no selection, find coordinates of current word if any
+    local current_pos = buffer.current_pos
+    local word_end   = buffer.word_end_position(buffer, current_pos, true)
+    local word_start = buffer.word_start_position(buffer, current_pos, true)
+    if word_start < word_end then
+      return word_start, word_end
+    end
+  end
+  -- Nor selection, nor current word found: return current position
+  return buffer.current_pos, buffer.current_pos
+end
+
+-- Surrounds the given text with a quoting character
+function Util.quote_text(quote, text_start, text_end)
+  -- Insert the needed quotes to surround the text
   local char = buffer.text_range(buffer, text_end, text_end+1)
-  if char ~= '"' then
-    buffer.insert_text(buffer, text_end, '"')
+  if (quote ~= '*' and quote ~= '_' and char ~= quote) or
+     (quote == '*' or quote == '_') then
+    buffer.insert_text(buffer, text_end, quote)
   end
+  local start_quoted = false
   char = buffer.text_range(buffer, text_start-1, text_start)
-  if char ~= '"' then
+  char_side = buffer.text_range(buffer, text_start-2, text_start)
+  if (quote ~= '*' and quote ~= '_' and char ~= quote) or
+     (quote == '*' or quote == '_') then
     -- Add at last the quote to not move the text
-    buffer.insert_text(buffer, text_start, '"')
+    buffer.insert_text(buffer, text_start, quote)
+    start_quoted = true
   end
+  
+  -- Select the quoted text, without the quotes
+  local len = text_end - text_start
+  if start_quoted then
+    buffer.selection_start = text_start + 1
+  else
+    buffer.selection_start = text_start
+  end
+  buffer.selection_end = buffer.selection_start + len
 end
 
 --[[

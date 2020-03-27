@@ -175,19 +175,29 @@ end
 -- Ctrl+" : sets the current selection (if any) or the current word between quotes
 keys['c"'] = function()
   if buffer.get_lexer(buffer, false) == 'markdown' then
-    local sel_start = buffer.selection_start
-    local sel_end = buffer.selection_end
-    if sel_start < sel_end then
-      -- Quote the current selection
-      Util.quote_text(sel_start, sel_end)
-    else
-      -- Quote the current word if any
-      local current_pos = buffer.current_pos
-      local word_end   = buffer.word_end_position(buffer, current_pos, true)
-      local word_start = buffer.word_start_position(buffer, current_pos, true)
-      if word_start < word_end then
-        Util.quote_text(word_start, word_end)
-      end
+    local quote_start, quote_end = Util.get_current_sel_pos()
+    if quote_start < quote_end then
+      Util.quote_text('"', quote_start, quote_end)
+    end
+  end
+end
+
+-- Ctrl+* : sets the current selection (if any) or the current word between stars
+keys['c*'] = function()
+  if buffer.get_lexer(buffer, false) == 'markdown' then
+    local quote_start, quote_end = Util.get_current_sel_pos()
+    if quote_start < quote_end then
+      Util.quote_text('*', quote_start, quote_end)
+    end
+  end
+end
+
+-- Ctrl+_ : sets the current selection (if any) or the current word between underscores
+keys['c_'] = function()
+  if buffer.get_lexer(buffer, false) == 'markdown' then
+    local quote_start, quote_end = Util.get_current_sel_pos()
+    if quote_start < quote_end then
+      Util.quote_text('_', quote_start, quote_end)
     end
   end
 end

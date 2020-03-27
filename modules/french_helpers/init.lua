@@ -23,7 +23,9 @@ events.connect(events.LEXER_LOADED, function(lexer)
 end)
 
 --[[
-Adaptation to french keyboard
+Adaptation to french keyboard 
+(some easy QWERTY characters are a real pain in AZERTY keyboards)
+- "²" key transformed to back quote
 ]]
 events.connect(events.KEYPRESS, 
   function (code, shift, control, alt, meta, caps_lock)
@@ -40,8 +42,18 @@ events.connect(events.KEYPRESS,
          not alt and
          not meta and
          not caps_lock then
-         buffer:replace_sel('```')
-         return true
+        buffer:replace_sel('```')
+        return true
+      elseif not shift and 
+         control and 
+         not alt and
+         not meta and
+         not caps_lock then
+        local quote_start, quote_end = Util.get_current_sel_pos()
+        if quote_start < quote_end then
+          Util.quote_text('`', quote_start, quote_end)
+        end
+        return true
       end
     end
   end)
