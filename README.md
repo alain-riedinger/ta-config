@@ -56,7 +56,8 @@ Very useful when you try to define the color set of a theme.
 
 French keyboard layout is miserable when it comes to type code, so I adapted it a little bit:
 - **²** for a backquote
-- **Ctrl+²** enters 3 back quotes for a code block
+- **Shift+²** enters 3 back quotes for a code block
+- **Ctrl+²** quotes the selected text or the current word with a back quote
 - **'** the single quote is not automatically doubled, because in french it is often used in natural language
 
 ## Search helpers
@@ -70,6 +71,8 @@ Some helpers added to ease the search operations:
 
 Some helpers added to ease text edition operations:
 - **Ctrl+"** quotes the selected text, if any, or the current word
+- __Ctrl+*__ quotes with a star the selected text, if any, or the current word
+- **Ctrl+_** quotes with an underscore the selected text, if any, or the current word
 
 ## Distraction free mode
 
