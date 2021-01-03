@@ -17,23 +17,23 @@
 Require the other modules
 ]]
 require('util')
-require('ctrl_tab_mru')
+require('search')
+require('distraction_free')
 require('favourites')
+require('ctrl_tab_mru')
 require('french_helpers')
 require('highlighting')
 require('color_hint')
-require('search')
-require('distraction_free')
---require('ctags')
 
 --[[---------------------------------------------------------------------------------------
 Set theming
 ]]
-if not CURSES then 
-  buffer:set_theme('base16-solarized-dark', {
-    font = "Consolas",
-    fontsize = 12
-  }) 
+-- Adjust the default theme's font and size.
+if not CURSES then
+  view:set_theme('base16-solarized-dark', {
+	font = 'Consolas', 
+	size = 12
+  })
 end
 
 --[[---------------------------------------------------------------------------------------
@@ -45,16 +45,14 @@ buffer.property['highlighting.identical.text'] = 1
 buffer.property['highlighting.color.hint'] = 1
 
 -- Editor settings
-buffer.caret_style = buffer.CARETSTYLE_LINE
-buffer.caret_width = 2
-buffer.caret_fore = 0x0000FF
-buffer.caret_line_visible = true
---buffer.caret_line_visible_always = true
---buffer.caret_line_back = 0x333333
---buffer.caret_line_back_alpha =
---buffer.caret_period = 0
---buffer.caret_style = c.CARETSTYLE_BLOCK
---buffer.caret_sticky = c.SC_CARETSTICKY_ON
+view.caret_style = buffer.CARETSTYLE_LINE
+view.caret_width = 2
+view.caret_fore = 0x0000FF
+view.caret_line_visible = true
+--view.caret_line_visible_always = true
+--view.caret_line_back = 0x333333
+--view.caret_line_back_alpha =
+--view.caret_period = 0
 
 -- Adapt auto-pairs to french language
 textadept.editing.auto_pairs = {[40] = ')', [91] = ']', [123] = '}', [34] = '"'}
@@ -70,41 +68,17 @@ events.connect(events.LEXER_LOADED, function(lexer)
     buffer.property['key.special.square'] = 'true'
     
     -- Activate wrap mode
-    buffer.wrap_mode = buffer.WRAP_WHITESPACE
-    buffer.wrap_visual_flags = buffer.WRAPVISUALFLAG_MARGIN
+    view.wrap_mode = view.WRAP_WHITESPACE
+    view.wrap_visual_flags = view.WRAPVISUALFLAG_MARGIN
   else
     -- Set normal behaviour for square key
     buffer.property['key.special.square'] = 'false'
 
     -- Reset wrap mode
-    buffer.wrap_mode = buffer.WRAP_NONE
-    buffer.wrap_visual_flags = buffer.WRAPVISUALFLAG_NONE
+    view.wrap_mode = view.WRAP_NONE
+    view.wrap_visual_flags = view.WRAPVISUALFLAG_NONE
     end
 end)
-
---[[
-Adaptation to french keyboard
-]]
-events.connect(events.KEYPRESS, 
-  function (code, shift, control, alt, meta, caps_lock)
-    if buffer.property['key.special.square'] == 'true' and code == 178 then -- the tiny "2" (square)
-      if not shift and 
-         not control and 
-         not alt and
-         not meta and
-         not caps_lock then
-        buffer:replace_sel('`')
-        return true
-      elseif shift and 
-         not control and 
-         not alt and
-         not meta and
-         not caps_lock then
-         buffer:replace_sel('```')
-         return true
-      end
-    end
-  end)
 
 --[[
 Markdown facilities:
@@ -115,9 +89,9 @@ events.connect(events.DOUBLE_CLICK,
     if buffer.get_lexer(buffer, false) == 'markdown' then
       if Util.land(modifiers, buffer.MOD_CTRL) == buffer.MOD_CTRL then 
         local style = buffer.style_at[buffer.current_pos]
-        --local text = string.format("%s (%d)", buffer.style_name[style], style)
+        --local text = string.format("%s (%d)", buffer.name_of_style[style], style)
         --Util.status(text)
-        if buffer.style_name[style] == 'link' then
+        if buffer.name_of_style(style) == 'link' then
           local pos = buffer.current_pos
           -- Search for trailing )
           repeat
@@ -154,16 +128,16 @@ Customizations of user inputs:
 ]]
 
 -- Ctrl+F : searches for current word, if any
-keys['cf'] = function()
+keys['ctrl+f'] = function()
   Search.preload_search_ui()
 end
 
 -- Ctrl+F3 : searches for next occurence of current word, if any
 -- Ctrl+Shift+F3 : searches for previous occurence of current word, if any
-keys['cf3'] = function()
+keys['ctrl+f3'] = function()
   Search.search_current_word(true)
 end
-keys['csf3'] = function()
+keys['ctrl+shift+f3'] = function()
   Search.search_current_word(false)
 end
 
@@ -173,7 +147,7 @@ keys['f11'] = function()
 end
 
 -- Ctrl+" : sets the current selection (if any) or the current word between quotes
-keys['c"'] = function()
+keys['ctrl+"'] = function()
   if buffer.get_lexer(buffer, false) == 'markdown' then
     local quote_start, quote_end = Util.get_current_sel_pos()
     if quote_start < quote_end then
@@ -183,7 +157,7 @@ keys['c"'] = function()
 end
 
 -- Ctrl+* : sets the current selection (if any) or the current word between stars
-keys['c*'] = function()
+keys['ctrl+*'] = function()
   if buffer.get_lexer(buffer, false) == 'markdown' then
     local quote_start, quote_end = Util.get_current_sel_pos()
     if quote_start < quote_end then
@@ -193,7 +167,7 @@ keys['c*'] = function()
 end
 
 -- Ctrl+_ : sets the current selection (if any) or the current word between underscores
-keys['c_'] = function()
+keys['ctrl+_'] = function()
   if buffer.get_lexer(buffer, false) == 'markdown' then
     local quote_start, quote_end = Util.get_current_sel_pos()
     if quote_start < quote_end then
@@ -203,14 +177,15 @@ keys['c_'] = function()
 end
 
 -- Sample shortcut: here for Ctrl+F12
-keys['cf12'] = function()
+keys['ctrl+f12'] = function()
   --ui.dialogs.filteredlist{title = 'Title', columns = {'Foo', 'Bar'}, items = {'a', 'b', 'c', 'd'}} 
   --ui.statusbar_text = tostring(Util.get_current_word())
   --Util.editor_mark_text_alpha(4, buffer.current_pos, 10, '0x00AA00', 30, 192)
   --Util.editor_mark_text_alpha(5, buffer.current_pos, 10, '0x0000AA', 30, 192)
   --Util.is_color('function')
   --Util.is_color('0xFFEEDD')
-  Util.is_color('0xBBGGRR')
+  --Util.is_color('0xBBGGRR')
+  Util.debug('Shortcut sample!!!')
 end
 
 -- Example of menu bar extension

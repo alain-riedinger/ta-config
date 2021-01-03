@@ -18,21 +18,12 @@ lex:add_rule('header',
              token('h3', lexer.starts_line('###') * lexer.nonnewline^0) +
              token('h2', lexer.starts_line('##') * lexer.nonnewline^0) +
              token('h1', lexer.starts_line('#') * lexer.nonnewline^0))
-local font_size = lexer.property_int['fontsize'] > 0 and
-                  lexer.property_int['fontsize'] or 10
---local hstyle = 'fore:$(color.red)'
-local hstyle = 'fore:$(color.orange)'
-lex:add_style('h6', hstyle)
---lex:add_style('h5', hstyle..',size:'..(font_size + 1))
---lex:add_style('h4', hstyle..',size:'..(font_size + 2))
---lex:add_style('h3', hstyle..',size:'..(font_size + 3))
---lex:add_style('h2', hstyle..',size:'..(font_size + 4))
---lex:add_style('h1', hstyle..',size:'..(font_size + 5))
-lex:add_style('h5', hstyle)
-lex:add_style('h4', hstyle..',italics')
-lex:add_style('h3', hstyle..',underlined')
-lex:add_style('h2', hstyle..',bold')
-lex:add_style('h1', hstyle..',bold,underlined')
+lex:add_style('h6', {fore = lexer.colors.orange})
+lex:add_style('h5', {fore = lexer.colors.orange})
+lex:add_style('h4', {fore = lexer.colors.orange, italics = true })
+lex:add_style('h3', {fore = lexer.colors.orange, underlined = true})
+lex:add_style('h2', {fore = lexer.colors.orange, bold = true})
+lex:add_style('h1', {fore = lexer.colors.orange, bold = true, underlined = true})
 
 lex:add_rule('blockquote',
              token(lexer.STRING,
@@ -47,25 +38,20 @@ lex:add_rule('list', token('list', lexer.starts_line(S(' \t')^0 * (S('*+-') +
                                    S(' \t')))
 lex:add_style('list', lexer.STYLE_CONSTANT)
 
--- I don't like style based on indentation... it ruins my layout
---lex:add_rule('blockcode',
-             --token('code', lexer.starts_line(P(' ')^4 + P('\t')) * -P('<') *
-                           --lexer.nonnewline^0 * lexer.newline^-1))
-----lex:add_style('code', lexer.STYLE_EMBEDDED..',eolfilled')
---lex:add_style('code', 'fore:$(color.cyan),back:$(color.base01),eolfilled')
+local hspace = S('\t\v\f\r ')
+local blank_line = '\n' * hspace^0 * ('\n' + P(-1))
 
-lex:add_rule('hr',
-             token('hr',
-                   lpeg.Cmt(lexer.starts_line(S(' \t')^0 * lpeg.C(S('*-_'))),
-                            function(input, index, c)
-                              local line = input:match('[^\n]*', index)
-                              line = line:gsub('[ \t]', '')
-                              if line:find('[^'..c..']') or #line < 2 then
-                                return nil
-                              end
-                              return (input:find('\n', index) or #input) + 1
-                            end)))
-lex:add_style('hr', 'back:$(color.black),eolfilled')
+lex:add_rule('hr', 
+             token('hr', 
+			       lpeg.Cmt(lexer.starts_line(S(' \t')^0 * lpeg.C(S('*-_'))), 
+				            function(input, index, c)
+							  local line = input:match('[^\r\n]*', index):gsub('[ \t]', '')
+							  if line:find('[^' .. c .. ']') or #line < 2 then 
+							    return nil 
+							  end
+							  return (select(2, input:find('\r?\n', index)) or #input) + 1
+							end)))
+lex:add_style('hr', {back = lexer.colors.black, eolfilled = true})
 
 -- Whitespace.
 local ws = token(lexer.WHITESPACE, S(' \t')^1 + S('\v\r\n')^1)
@@ -74,81 +60,87 @@ lex:add_rule('whitespace', ws)
 -- Span elements.
 lex:add_rule('escape', token(lexer.DEFAULT, P('\\') * 1))
 
-lex:add_rule('link_label',
-             token('link_label', lexer.delimited_range('[]') * ':') * ws *
-             token('link_url', (lexer.any - lexer.space)^1) *
-             (ws * token(lexer.STRING, lexer.delimited_range('"', false, true) +
-                                       lexer.delimited_range("'", false, true) +
-                                       lexer.delimited_range('()')))^-1)
-lex:add_style('link_label', lexer.STYLE_LABEL)
-lex:add_style('link_url', 'fore:$(color.blue),underlined')
+local ref_link_label = token('link_label', lexer.range('[', ']', true) * ':')
+local ref_link_url = token('link_url', (lexer.any - lexer.space)^1)
+local ref_link_title = token(lexer.STRING, lexer.range('"', true, false) +
+  lexer.range("'", true, false) + lexer.range('(', ')', true))
+lex:add_rule('link_label', ref_link_label * ws * ref_link_url *
+  (ws * ref_link_title)^-1)
+lex:add_style('link_label', lexer.styles.label)
+lex:add_style('link_url', {fore = lexer.colors.blue, underlined = true})
 
-lex:add_rule('link',
-             token('link', P('!')^-1 * lexer.delimited_range('[]') *
-                           (P('(') * (lexer.any - S(') \t'))^0 *
-                            (S(' \t')^1 *
-                             lexer.delimited_range('"', false, true))^-1 * ')' +
-                            S(' \t')^0 * lexer.delimited_range('[]')) +
-                           P('http://') * (lexer.any - lexer.space)^1 +
-                           P('https://') * (lexer.any - lexer.space)^1))
-lex:add_style('link', 'fore:$(color.blue),underlined')
+local link_label = P('!')^-1 * lexer.range('[', ']', true)
+local link_target = P('(') * (lexer.any - S(') \t'))^0 *
+  (S(' \t')^1 * lexer.range('"', false, false))^-1 * ')'
+local link_ref = S(' \t')^0 * lexer.range('[', ']', true)
+local link_url = 'http' * P('s')^-1 * '://' * (lexer.any - lexer.space)^1
+lex:add_rule('link', token('link', link_label * (link_target + link_ref) +
+  link_url))
+lex:add_style('link', {fore = lexer.colors.blue, underlined = true})
 
-lex:add_rule('strong', token('strong', P('**') * (lexer.any - '**')^0 *
-                                       P('**')^-1 +
-                                       P('__') * (lexer.any - '__')^0 *
-                                       P('__')^-1))
---lex:add_style('strong', 'bold')
-lex:add_style('strong', 'fore:$(color.yellow),bold')
-lex:add_rule('em', token('em', lexer.delimited_range('*', true) +
-                               lexer.delimited_range('_', true)))
---lex:add_rule('em', token('em', (#lexer.space * lexer.delimited_range('*', true) * #lexer.space) +
-                               --(#lexer.space * lexer.delimited_range('_', true) * #lexer.space)))
---lex:add_style('em', 'italics')
-lex:add_style('em', 'fore:$(color.yellow),italics')
+local punct_space = lexer.punct + lexer.space
+
+-- Handles flanking delimiters as described in
+-- https://github.github.com/gfm/#emphasis-and-strong-emphasis in the cases
+-- where simple delimited ranges are not sufficient.
+local function flanked_range(s, not_inword)
+  local fl_char = lexer.any - s - lexer.space
+  local left_fl = lpeg.B(punct_space - s) * s * #fl_char +
+    s * #(fl_char - lexer.punct)
+  local right_fl = lpeg.B(lexer.punct) * s * #(punct_space - s) +
+    lpeg.B(fl_char) * s
+  return left_fl * (lexer.any - blank_line -
+    (not_inword and s * #punct_space or s))^0 * right_fl
+end
+
+lex:add_rule('strong', token('strong', flanked_range('**') +
+  (lpeg.B(punct_space) + #lexer.starts_line('_')) * flanked_range('__', true) *
+  #(punct_space + -1)))
+lex:add_style('strong', {fore = lexer.colors.yellow, bold = true})
+
+lex:add_rule('em', token('em', flanked_range('*') +
+  (lpeg.B(punct_space) + #lexer.starts_line('_')) * flanked_range('_', true) *
+  #(punct_space + -1)))
+lex:add_style('em', {fore = lexer.colors.yellow, italics = true})
+
 lex:add_rule('code', token('code', P('```') * (lexer.any - '```')^0 * P('```')^-1 +
                                    lexer.delimited_range('`', true, true)))
-lex:add_style('code', 'fore:$(color.cyan),back:$(color.base01),eolfilled')
+lex:add_style('code', {fore = lexer.colors.cyan, eolfilled = true})
 
 -- Embedded HTML.
 local html = lexer.load('html')
-local start_rule = lexer.starts_line(S(' \t')^0) * #P('<') *
-                   html:get_rule('element')
-local end_rule = token(lexer.DEFAULT, P('\n')) -- TODO: lexer.WHITESPACE errors
+local start_rule = lexer.starts_line(P(' ')^-3) * #P('<') *
+  html:get_rule('element') -- P(' ')^4 starts code_line
+local end_rule = token(lexer.DEFAULT, blank_line) -- TODO: lexer.WHITESPACE errors
 lex:embed(html, start_rule, end_rule)
 
 -- Custom rules
 
 -- Strings
---local dq_str = lexer.delimited_range('"')
---lex:add_rule('string', token(lexer.STRING, dq_str))
 lex:add_rule('quoted', token('quoted', lexer.delimited_range('"', true)))
-lex:add_style('quoted', 'fore:$(color.yellow)')
+lex:add_style('quoted', {fore = lexer.colors.yellow})
 
 -- Strikeout
 lex:add_rule('strikeout', token('strikeout', P('~~') * (lexer.any - '~~')^0 * P('~~')^-1))
-lex:add_style('strikeout', 'fore:$(color.base02)')
+lex:add_style('strikeout', {fore = lexer.colors.base02})
 
 -- => conclusion
 lex:add_rule('conclusion', token('conclusion', P('=>')))
-lex:add_style('conclusion', 'fore:$(color.green),bold')
---lex:add_style('conclusion', 'back:%(color.green),fore:%(color.base07),bold')
+lex:add_style('conclusion', {fore = lexer.colors.green, bold = true})
 -- -> action
 lex:add_rule('action', token('action', P('->')))
-lex:add_style('action', 'fore:$(color.cyan),bold')
---lex:add_style('action', 'back:%(color.cyan),fore:%(color.base07),bold')
+lex:add_style('action', {fore = lexer.colors.cyan, bold = true})
 -- /!\ warning
 lex:add_rule('warning', token('warning', P('/!\\')))
-lex:add_style('warning', 'fore:$(color.red),bold')
---lex:add_style('warning', 'back:%(color.red),fore:%(color.base07),bold')
+lex:add_style('warning', {fore = lexer.colors.red, bold = true})
 -- (!) idea (?) question
 lex:add_rule('idea', token('idea', P('(!)') + P('(?)')))
-lex:add_style('idea', 'fore:$(color.cyan),bold')
---lex:add_style('idea', 'back:%(color.blue),fore:%(color.base07),bold')
+lex:add_style('idea', {fore = lexer.colors.cyan, bold = true})
 -- [ ] to do
 lex:add_rule('todo', token('todo', P('[ ]')))
-lex:add_style('todo', 'fore:$(color.orange),bold')
+lex:add_style('todo', {fore = lexer.colors.orange, bold = true})
 -- [x] done
 lex:add_rule('done', token('done', P('[x]')))
-lex:add_style('done', 'fore:$(color.cyan),bold')
+lex:add_style('done', {fore = lexer.colors.cyan, bold = true})
 
 return lex

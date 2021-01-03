@@ -18,6 +18,11 @@ function Util.status(msg)
 end
 
 --[[---------------------------------------------------------------------------------------
+Global constants / values
+]]
+Util.UNTITLED_TEXT= _L['Untitled']
+
+--[[---------------------------------------------------------------------------------------
 Helpers for views and buffers
 ]]
 -- Switches to an already opened view
@@ -37,12 +42,12 @@ function Util.editor_clear_marks(style_number, start, length)
   local _first_style, _end_style, style
   local current_mark_number = buffer.indicator_current
   if style_number == nil then
-    _first_style, _end_style = 0, 31
+    _first_style, _end_style = 1, 32
   else
     _first_style, _end_style = style_number, style_number
   end
   if start == nil then
-    start, length = 0, buffer.length
+    start, length = 0, buffer.length + 1
   end
   for style = _first_style, _end_style do
     buffer.indicator_current = style
@@ -55,10 +60,10 @@ end
 function Util.editor_mark_text_alpha(style_number, start, length, fore, alpha, outlinealpha)
   local current_mark_number = buffer.indicator_current
   buffer.indicator_current = style_number
-  buffer.indic_style[style_number] = buffer.INDIC_STRAIGHTBOX
-  buffer.indic_fore[style_number] = fore
-  buffer.indic_alpha[style_number] = alpha
-  buffer.indic_outline_alpha[style_number] = outlinealpha
+  view.indic_style[style_number] = view.INDIC_STRAIGHTBOX
+  view.indic_fore[style_number] = fore
+  view.indic_alpha[style_number] = alpha
+  view.indic_outline_alpha[style_number] = outlinealpha
   buffer.indicator_fill_range(buffer, start, length)
   buffer.indicator_current = current_mark_number
 end
@@ -67,8 +72,8 @@ end
 function Util.editor_mark_text_colour(style_number, start, length, color)
   local current_mark_number = buffer.indicator_current
   buffer.indicator_current = style_number
-  buffer.indic_style[style_number] = buffer.INDIC_COMPOSITIONTHICK 
-  buffer.indic_fore[style_number] = color
+  view.indic_style[style_number] = view.INDIC_COMPOSITIONTHICK 
+  view.indic_fore[style_number] = color
   buffer.indicator_fill_range(buffer, start, length)
   buffer.indicator_current = current_mark_number
 end
@@ -78,7 +83,11 @@ function Util.get_current_word()
   local current_pos = buffer.current_pos
   local word_start = buffer.word_start_position(buffer, current_pos, true)
   local word_end   = buffer.word_end_position(buffer, current_pos, true)
-  return buffer.text_range(buffer, word_start, word_end)
+  local current_word = ""
+  if word_start < word_end then
+	current_word = buffer.text_range(buffer, word_start, word_end)
+  end
+  return current_word
 end
 
 -- Returns the start and end position of the current selected text

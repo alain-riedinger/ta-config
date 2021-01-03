@@ -1,19 +1,21 @@
 --[[
 [ta-tweaks/init.lua at master · gabdub/ta-tweaks](https://github.com/gabdub/ta-tweaks/blob/master/modules/ctrl_tab_mru/init.lua)
   
- Copyright 2016-2017 Gabriel Dubatti. See LICENSE.
------------- ctrl+tab / ctrl+shift+tab MRU --------------------
-HOLD control key DOWN and press tab = goto previous used buffers (MRU list)
- ctrl+tab       : forward
- ctrl+shift+tab : backwards
-example with 5 buffers: CONTROL pressed, TAB pressed 5 times, CONTROL released
-  tab tab tab tab tab
- 1-  2-  3-  4-  5^  1
- 2-  1   1   1   1^  2
- 3   3-  2   2   2^  3
- 4   4   4-  3   3^  4
- 5   5   5   5-  4^  5
+-- Copyright 2016-2020 Gabriel Dubatti. See LICENSE.
+-------------- ctrl+tab / ctrl+shift+tab MRU --------------------
+--HOLD control key DOWN and press tab = goto previous used buffers (MRU list)
+-- ctrl+tab       : forward
+-- ctrl+shift+tab : backwards
+--example with 5 buffers: CONTROL pressed, TAB pressed 5 times, CONTROL released
+--  tab tab tab tab tab
+-- 1-  2-  3-  4-  5^  1
+-- 2-  1   1   1   1^  2
+-- 3   3-  2   2   2^  3
+-- 4   4   4-  3   3^  4
+-- 5   5   5   5-  4^  5
+--
 ]]
+
 local Util = Util
 local ctrl_key_down = false
 local tab_mru_idx= 0
@@ -61,9 +63,9 @@ local function mru_ctrl_tab_handler(shift)
   local right= nil
   --Project module? check current view and goto files view before handling control+tab
   if Proj then
-    if Proj.getout_projview() then return end
-    --in right panel, only switch right files
-    if _VIEWS[view] == Proj.prefview[Proj.PRJV_FILES_2] then right= true end
+    if Proj.goto_filesview() then return end  --exit if the view changed
+    --in the right panel: only switch to another right marked file
+    if _VIEWS[view] == Proj.get_projview(Proj.PRJV_FILES_2) then right= true end
   end
 
   if ctrl_key_down then
@@ -73,7 +75,7 @@ local function mru_ctrl_tab_handler(shift)
     ctrl_key_down = false
   end
 
-  local swap
+  local swap, mr
   repeat
     if shift then
       --ctrl+shift+ tab + .. + tab: swap 'backwards'
@@ -110,13 +112,15 @@ local function mru_ctrl_tab_handler(shift)
       mru_buff[1]= mru_buff[swap]
       mru_buff[swap]= b
     end
-  until mru_buff[1]._project_select==nil and mru_buff[1]._type==nil and mru_buff[1]._right_side==right
+
+    mr= mru_buff[1]
+  until mr._project_select == nil and (mr._type == nil or mr._type == Util.UNTITLED_TEXT) and mr._right_side == right
 
   --activate the buffer in the TOP of the MRU list
   --Project module? change to left/right files view if needed (without project: 1/2, with project: 2/4)
   local newb= mru_buff[1]
   if Proj then
-    Proj.goto_filesview(false, newb._right_side)
+    Proj.goto_filesview(newb._right_side and Proj.FILEPANEL_RIGHT or Proj.FILEPANEL_LEFT)
   else
     --no project module: view #2 is the right_side panel
     if newb._right_side then
@@ -169,10 +173,21 @@ events_connect(events.BUFFER_DELETED, function()
         end
         mru_buff[j]= nil
       end
-      i=i+1
     end
+    i=i+1
   end
 end)
+
+--return the top buffer in the MRU list (any/left/right)
+function gettop_MRUbuff(any, right)
+  if right == false then right= nil end
+  for i= 1, #mru_buff do
+    local b= mru_buff[i]
+    if b._project_select == nil and (b._type == nil or b._type == Util.UNTITLED_TEXT) and
+      (any or b._right_side == right) then return b end
+  end
+  return nil
+end
 
 --load existing buffers in the MRU list
 if #_BUFFERS > 0 then
@@ -191,9 +206,9 @@ end
 -- Control+TAB            goto next MRU buffer
 -- Control+Shift+TAB      goto prev MRU buffer
 if actions then
-  actions.add("next_mru_buffer", 'Next MRU buffer', function() mru_ctrl_tab_handler(false) end, "c\t")
-  actions.add("prev_mru_buffer", 'Prev MRU buffer', function() mru_ctrl_tab_handler(true)  end, "cs\t")
+  actions.add("next_mru_buffer", 'Next MRU buffer', function() mru_ctrl_tab_handler(false) end, "ctrl+\t")
+  actions.add("prev_mru_buffer", 'Prev MRU buffer', function() mru_ctrl_tab_handler(true)  end, "ctrl+shift+\t")
 else
-  keys['c\t'] = function() mru_ctrl_tab_handler(false) end
-  keys['cs\t']= function() mru_ctrl_tab_handler(true)  end
+  keys['ctrl+\t'] = function() mru_ctrl_tab_handler(false) end
+  keys['ctrl+shift+\t']= function() mru_ctrl_tab_handler(true)  end
 end

@@ -38,10 +38,10 @@ local function color_hint_setter()
     local color_start, color_end
     color_start = buffer.word_start_position(buffer, current_pos, true)
     color_end = buffer.word_end_position(buffer, current_pos, true)
+    
     local color = cur_text
-    
-    ui.statusbar_text = color
-    
+    -- For debug only
+    --ui.statusbar_text = color
     Util.editor_mark_text_colour(mark_color, color_start, color_end-color_start, color)
   end
 end
