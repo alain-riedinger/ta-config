@@ -195,7 +195,7 @@ local my_tools_menu = {
   {'Favourites...', function() Favourites.select_favourite() end},
   {'Item 2', function() local j = 1 end}
 }
-local tools = textadept.menu.menubar[_L['_Tools']]
+local tools = textadept.menu.menubar[_L['Tools']]
 tools[#tools + 1] = SEPARATOR
 tools[#tools + 1] = my_tools_menu
 
