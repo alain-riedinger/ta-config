@@ -11,6 +11,7 @@
 
 local view, colors, styles = view, lexer.colors, lexer.styles
 
+-- Definition of Colors a la "Solarized Dark"
 colors.base00 = 0x362b00   -- base03
 colors.base01 = 0x423607   -- base02
 colors.base02 = 0x756e58   -- base01
@@ -27,6 +28,54 @@ colors.base0C = 0x98a12a   -- cyan
 colors.base0D = 0xd28b26   -- blue
 colors.base0E = 0xc4716c   -- violet
 colors.base0F = 0x8236d3   -- magenta
+
+-- Supercharge Definition of colors as in official TextAdept themes
+-- (see TextAdept install dirs in TextAdept\themes)
+-- Greyscale colors.
+colors.dark_black = 0x000000
+colors.black = colors.base00
+colors.light_black = colors.base01
+colors.grey_black = colors.base02
+colors.dark_grey = colors.base03
+colors.grey = colors.base04
+colors.light_grey = colors.base04
+colors.grey_white = colors.base05
+colors.dark_white = colors.base06
+colors.white = colors.base07
+colors.light_white = 0xFFFFFF
+
+-- Dark colors.
+colors.dark_red = colors.base08
+colors.dark_yellow = colors.base0A
+colors.dark_green = colors.base0B
+colors.dark_teal = colors.base0C
+colors.dark_purple = colors.base0E
+colors.dark_orange = colors.base09
+colors.dark_pink = colors.base0F
+colors.dark_lavender = colors.base0E
+colors.dark_blue = colors.base0D
+
+-- Normal colors.
+colors.red = colors.base08
+colors.yellow = colors.base0A
+colors.green = colors.base0B
+colors.teal = colors.base0C
+colors.purple = colors.base0E
+colors.orange = colors.base09
+colors.pink = colors.base0F
+colors.lavender = colors.base0E
+colors.blue = colors.base0D
+
+-- Light colors.
+colors.light_red = colors.base08
+colors.light_yellow = colors.base0A
+colors.light_green = colors.base0B
+colors.light_teal = colors.base0C
+colors.light_purple = colors.base0E
+colors.light_orange = colors.base09
+colors.light_pink = colors.base0F
+colors.light_lavender = colors.base0E
+colors.light_blue = colors.base0D
 
 -- Default font.
 if not font then
@@ -110,12 +159,3 @@ view.call_tip_fore_hlt = colors.base06
 
 -- Long Lines.
 view.edge_color = colors.base01
-
--- Add red and green for diff lexer.
-colors.red = colors.base08
-colors.orange = colors.base09
-colors.green = colors.base0B
-colors.yellow = colors.base0A
-colors.blue = colors.base0D
-colors.cyan = colors.base0C
-colors.black = 0x000000

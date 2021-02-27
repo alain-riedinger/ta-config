@@ -105,7 +105,7 @@ lex:add_style('em', {fore = lexer.colors.yellow, italics = true})
 
 lex:add_rule('code', token('code', P('```') * (lexer.any - '```')^0 * P('```')^-1 +
                                    lexer.delimited_range('`', true, true)))
-lex:add_style('code', {fore = lexer.colors.cyan, eolfilled = true})
+lex:add_style('code', {fore = lexer.colors.teal, eolfilled = true})
 
 -- Embedded HTML.
 local html = lexer.load('html')
@@ -122,25 +122,30 @@ lex:add_style('quoted', {fore = lexer.colors.yellow})
 
 -- Strikeout
 lex:add_rule('strikeout', token('strikeout', P('~~') * (lexer.any - '~~')^0 * P('~~')^-1))
-lex:add_style('strikeout', {fore = lexer.colors.base02})
+lex:add_style('strikeout', {fore = lexer.colors.grey_black})
 
 -- => conclusion
 lex:add_rule('conclusion', token('conclusion', P('=>')))
 lex:add_style('conclusion', {fore = lexer.colors.green, bold = true})
 -- -> action
 lex:add_rule('action', token('action', P('->')))
-lex:add_style('action', {fore = lexer.colors.cyan, bold = true})
+lex:add_style('action', {fore = lexer.colors.teal, bold = true})
 -- /!\ warning
 lex:add_rule('warning', token('warning', P('/!\\')))
 lex:add_style('warning', {fore = lexer.colors.red, bold = true})
 -- (!) idea (?) question
 lex:add_rule('idea', token('idea', P('(!)') + P('(?)')))
-lex:add_style('idea', {fore = lexer.colors.cyan, bold = true})
+lex:add_style('idea', {fore = lexer.colors.teal, bold = true})
 -- [ ] to do
 lex:add_rule('todo', token('todo', P('[ ]')))
 lex:add_style('todo', {fore = lexer.colors.orange, bold = true})
 -- [x] done
 lex:add_rule('done', token('done', P('[x]')))
-lex:add_style('done', {fore = lexer.colors.cyan, bold = true})
+lex:add_style('done', {fore = lexer.colors.teal, bold = true})
+
+-- TEST
+-- lexer.colors.test = 0x164bcb
+-- lex:add_rule('test', token('test', P('TEST')))
+-- lex:add_style('test', {fore = lexer.colors.test, bold = true})
 
 return lex
