@@ -77,20 +77,6 @@ colors.light_pink = colors.base0F
 colors.light_lavender = colors.base0E
 colors.light_blue = colors.base0D
 
--- Ugly workaround because of non persisting default colors, in lexer script
--- The default colors are reverted to "light.lua" values
--- The UPPERCASE colors are correctly set
--- Store here all the colors used by the custom lexers (or the others)
-colors.BLACK      = colors.black
-colors.BLUE       = colors.blue
-colors.YELLOW     = colors.yellow
-colors.GREY_BLACK = colors.grey_black
-colors.GREEN      = colors.green
-colors.RED        = colors.red
-colors.TEAL       = colors.teal
-colors.ORANGE     = colors.orange
--- Workaround ends here
-
 -- Default font.
 if not font then
   font = WIN32 and 'Courier New' or OSX and 'Monaco' or

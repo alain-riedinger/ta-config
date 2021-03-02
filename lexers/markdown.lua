@@ -10,20 +10,6 @@ local P, R, S = lpeg.P, lpeg.R, lpeg.S
 
 local lex = lexer.new('markdown')
 
--- Ugly workaround because of non persisting default colors, in lexer script
--- The default colors are reverted to "light.lua" values
--- The UPPERCASE colors are correctly set
--- Retrieve here the stored colors
-lexer.colors.black      = lexer.colors.BLACK
-lexer.colors.blue       = lexer.colors.BLUE
-lexer.colors.yellow     = lexer.colors.YELLOW
-lexer.colors.grey_black = lexer.colors.GREY_BLACK
-lexer.colors.green      = lexer.colors.GREEN
-lexer.colors.red        = lexer.colors.RED
-lexer.colors.teal       = lexer.colors.TEAL
-lexer.colors.orange     = lexer.colors.ORANGE
--- Workaround ends here
-
 -- Block elements.
 lex:add_rule('header',
              token('h6', lexer.starts_line('######') * lexer.nonnewline^0) +
