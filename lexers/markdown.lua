@@ -78,6 +78,13 @@ lex:add_rule('link', token('link', link_label * (link_target + link_ref) +
   link_url))
 lex:add_style('link', {fore = lexer.colors.blue, underlined = true})
 
+-- Added a style for local images (not URL based)
+lex:add_rule('image',
+             token('image', P('!')^1 *
+                            lexer.delimited_range('[]') * 
+                            lexer.delimited_range('()')))
+lex:add_style('image', {fore = lexer.colors.blue, underlined = true})
+
 local punct_space = lexer.punct + lexer.space
 
 -- Handles flanking delimiters as described in
