@@ -25,6 +25,12 @@ require('french_helpers')
 require('highlighting')
 require('color_hint')
 
+-- Correct bug of "AltGr+\" in TextAdept 11.4
+-- [Windows version 11.4 (with German keyb. layout) comes seriously buggy · Issue #247 · orbitalquark/textadept · GitHub](https://github.com/orbitalquark/textadept/issues/247)
+if not WINDOWS then
+  keys['ctrl+alt+\\'] = nil
+end
+
 --[[---------------------------------------------------------------------------------------
 Set theming
 ]]
