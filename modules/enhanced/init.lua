@@ -11,14 +11,12 @@ Shows total number of selected characters in the statusbar
 ]]
 events.connect(events.UPDATE_UI, function()
   if buffer.UPDATE_SELECTION ~= 0 then
-		local selcount = 0
-		for i = 1, buffer.selections do
-			selcount = selcount + (buffer.selection_n_end[i] - buffer.selection_n_start[i])
-		end
-		if selcount > 0 then
-			ui.statusbar_text = 'Chars: '..selcount
-		else
-			ui.statusbar_text = ''
-		end
+    local text = buffer.get_sel_text(buffer)
+    local selcount = utf8.len(text)
+    if selcount > 0 then
+      ui.statusbar_text = 'Chars: '..selcount
+    else
+      ui.statusbar_text = ''
+    end
   end
 end)
