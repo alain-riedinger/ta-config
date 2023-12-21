@@ -25,6 +25,7 @@ require('french_helpers')
 require('highlighting')
 require('color_hint')
 require('enhanced')
+require('text_format')
 
 -- Correct bug of "AltGr+\" in TextAdept 11.4
 -- [Windows version 11.4 (with German keyb. layout) comes seriously buggy · Issue #247 · orbitalquark/textadept · GitHub](https://github.com/orbitalquark/textadept/issues/247)
@@ -84,7 +85,17 @@ events.connect(events.LEXER_LOADED, function(lexer)
     -- Reset wrap mode
     view.wrap_mode = view.WRAP_NONE
     view.wrap_visual_flags = view.WRAPVISUALFLAG_NONE
+  end
+
+  -- Special behaviours for markdown
+  if lexer == 'markdown' then
+    -- Add a context menu for markdown tables formatting
+    local context = textadept.menu.context_menu
+    local sub = context['My Context']
+    if sub['Tablify'] == nil then
+      table.insert(sub, 1, {'Tablify', function() TextFormat.tablify() end})
     end
+  end
 end)
 
 --[[
@@ -209,7 +220,7 @@ tools[#tools + 1] = my_tools_menu
 -- Example of tab context menu
 local my_tab_context_menu = {
   title = 'My Tab Context',
-  {'Item 1', function() local i = 1 end},
+  {'Copy filename', function() buffer.copy_text(_G.buffer, _G.buffer.filename) end},
   {'Item 2', function() local j = 1 end}
 }
 local tab_context = textadept.menu.tab_context_menu
@@ -219,7 +230,7 @@ tab_context[#tab_context + 1] = my_tab_context_menu
 -- Example of context menu
 local my_context_menu = {
   title = 'My Context',
-  {'Item 1', function() local i = 1 end},
+  {'Text Stats...', function() Enhanced.text_stats() end},
   {'Item 2', function() local j = 1 end}
 }
 local context = textadept.menu.context_menu
