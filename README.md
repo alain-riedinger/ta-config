@@ -80,3 +80,33 @@ Distraction free mode is composed of:
 - a full full screen extension
 - menu bar is hidden
 This functionality works as a toggle from and to this mode.
+
+## Copy file path
+
+Accessible from the tab menu:
+- copies the full path of the file opened in the buffer
+
+## Text statistics
+
+Accessible from context menu in the buffer:
+- displays the statistics for either the selected text (if one) or the total text in the buffer
+- displayed statistics are number of characters, digits, spaces, signs and others
+
+## Tablify (markdown helper)
+
+The goal of this feature is to changed a raw table syntax in markdown to a nice formed and human readable table.  
+Accessible from the context menu in the buffer:
+- converts the select text to a nicely layedout mardown table
+```
+head1 | head2 | head 3
+--- | --- | ---
+vallll11 | val12 | vvval13
+val21 | vaaaal22 | val23
+```
+becomes:
+```
+|head1    | head2    | head 3 |
+|---      | ---      | ---    |
+|vallll11 | val12    | vvval13|
+|val21    | vaaaal22 | val23  |
+```
