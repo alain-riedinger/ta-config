@@ -10,7 +10,8 @@ Put a color hint under a color code, among possible formats:
 
 require('util')
 
-local mark_color = 6   -- identifier of mark to use to set a color hint
+-- local mark_color = 6   -- identifier of mark to use to set a color hint
+local mark_color = view.new_indic_number()   -- identifier of mark to use to set a color hint
 
 --[[
 Toggle the activation of the color hint
@@ -38,7 +39,6 @@ local function color_hint_setter()
     local color_start, color_end
     color_start = buffer.word_start_position(buffer, current_pos, true)
     color_end = buffer.word_end_position(buffer, current_pos, true)
-    
     local color = cur_text
     -- For debug only
     --ui.statusbar_text = color
@@ -47,12 +47,10 @@ local function color_hint_setter()
 end
 
 events.connect(events.UPDATE_UI, function(updated)
-  if tonumber(buffer.property['highlighting.color.hint']) == 1 then
     if updated ~= nil then
       if Util.land(updated, buffer.UPDATE_CONTENT) == buffer.UPDATE_CONTENT or
          Util.land(updated, buffer.UPDATE_SELECTION) == buffer.UPDATE_SELECTION then 
          color_hint_setter()
       end
-    end
   end
 end)

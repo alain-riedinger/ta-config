@@ -13,7 +13,7 @@ Favourites = {}
 
 -- Read favourite files
 function read_favs_file()
-  local favs_file = _USERHOME.."\\textadept.favs"
+  local favs_file = _USERHOME.."/textadept.favs"
   local f1 = io.open(favs_file)
   local favs = {}
   local i = 1
@@ -33,8 +33,7 @@ function Favourites.select_favourite()
   local favs = read_favs_file()
   if #favs > 0 then
     local options = {
-      title = 'Favourites',
-      informative_text = 'Select the file to open',
+      title = 'Favourites - Select the file to open',
       columns = {'Path'},
       items = {}
     }
@@ -43,8 +42,8 @@ function Favourites.select_favourite()
       table.insert(options["items"], v)
     end
     -- Display filtered dialog for user input
-    local button, idx = ui.dialogs.filteredlist(options)
-    if button == 1 and idx then
+    local idx = ui.dialogs.list(options)
+    if idx then
       io.open_file(options["items"][idx], nil)
     end
   end

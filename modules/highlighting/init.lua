@@ -21,9 +21,6 @@ local word_pattern     -- pattern defining a word, if no selection
 local alpha = 15			    -- alpha for the inside of the marker
 local outlinealpha = 150	-- alpha for the border of the marker
 
-local max = buffer.property['highlighting.identical.text.max']
-if max ~= '' then count_max = tonumber(max) end
-
 -- Colors for highlighting
 color_ident = 0x00FF00
 color_error = 0x0000FF
@@ -42,22 +39,22 @@ end
 Find the items that shall be highlighted
 ]]
 local function identical_text_finder()
-	local current_pos = buffer.current_pos
-	if current_pos == store_pos then return end
-	store_pos = current_pos
-
-	local cur_text = buffer.get_sel_text(buffer)
-	if cur_text:find('^%s+$') then return end
-	local find_flags = buffer.FIND_MATCHCASE
-	if cur_text == '' then
-		cur_text = Util.get_current_word()
-		find_flags = find_flags + buffer.FIND_WHOLEWORD
-	end
-	if cur_text == store_text then return end
-	store_text = cur_text
-
-	Util.editor_clear_marks(mark_ident)
-	Util.editor_clear_marks(mark_max)
+  local current_pos = buffer.current_pos
+  if current_pos == store_pos then return end
+  store_pos = current_pos
+  
+  local cur_text = buffer:get_sel_text(buffer)
+  if cur_text:find('^%s+$') then return end
+  local find_flags = buffer.FIND_MATCHCASE
+  if cur_text == '' then
+  	cur_text = Util.get_current_word()
+  	find_flags = find_flags + buffer.FIND_WHOLEWORD
+  end
+  if cur_text == store_text then return end
+  store_text = cur_text
+ 
+  Util.editor_clear_marks(mark_ident)
+  Util.editor_clear_marks(mark_max)
 	
   local match_table = {}
   -- Search in the complete buffer, with the previously defined search flags
@@ -98,42 +95,7 @@ local function identical_text_finder()
 end
 
 events.connect(events.UPDATE_UI, function(updated)
-  if tonumber(buffer.property['highlighting.identical.text']) == 1 then
-    if updated ~= nil then
-      if Util.land(updated, buffer.UPDATE_CONTENT) == buffer.UPDATE_CONTENT then 
-        if buffer.length ~= chars_count then
-          chars_count = buffer.length
-        end
-      end
-      if Util.land(updated, buffer.UPDATE_SELECTION) == buffer.UPDATE_SELECTION then 
-      end
-      identical_text_finder()
-    end
-  end
+  if updated & 3 == 0 then return end -- ignore scrolling
+  -- Process if it is not a scrolling event: no need to fussle
+  identical_text_finder()
 end)
-
---[[
-  [[code] [textadept] The UPDATE_UI event from Hugh Low on 2016-03-22 (code)](https://foicica.com/lists/code/201603/3111.html)
-local counter, tbl = 0, {}
-events.connect(events.UPDATE_UI, function(mask)
-  counter, tbl[15] = (counter + 1), nil
-  table.insert(tbl, 1, string.format('[%d] = %d', counter, mask or 0))
-  ui.statusbar_text = table.concat(tbl, ', ')
-end)
-]]
-
---[[
-  events.connect(events.UPDATE_UI, function(mask)
-    local ref = string.format('%x %x %x %x', buffer.UPDATE_CONTENT, buffer.UPDATE_SELECTION, buffer.UPDATE_V_SCROLL, buffer.UPDATE_H_SCROLL)
-    local status = ''
-    if mask == nil then 
-      status = status..' nil'
-    else
-      if Util.land(mask, buffer.UPDATE_CONTENT) == buffer.UPDATE_CONTENT then status = status..' UPDATE_CONTENT' end
-      if Util.land(mask, buffer.UPDATE_SELECTION) == buffer.UPDATE_SELECTION then status = status..' UPDATE_SELECTION' end
-      if Util.land(mask, buffer.UPDATE_V_SCROLL) == buffer.UPDATE_V_SCROLL then status = status..' UPDATE_V_SCROLL' end
-      if Util.land(mask, buffer.UPDATE_H_SCROLL) == buffer.UPDATE_H_SCROLL then status = status..' UPDATE_H_SCROLL' end
-    end
-    ui.statusbar_text = ref..' - '..(tostring(mask) or 'nil')..' - '..status
-  end)
-]]

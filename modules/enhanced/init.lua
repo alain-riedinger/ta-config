@@ -63,11 +63,11 @@ function Enhanced.text_stats()
 
   -- Display the statistics
   info = string.format('Chars: %d\nDigits: %d\nSpaces: %d\nSigns: %d\nOthers: %d\nTotal: %d', nb_chars, nb_digits, nb_spaces, nb_signs, nb_others, nbc)
-  ui.dialogs.msgbox{title = 'Statistics',
-                    text = info, 
-                    informative_text = 'Statistics on the '..infotext,
-                    icon = 'dialog-information', 
-                    button1 = 'OK', 
-                    button2 = nil, 
-                    button3 = nil}
+  title = 'Statistics on the '..infotext
+  ui.dialogs.message{title = title,
+                     text = info, 
+                     icon = 'dialog-information', 
+                     button1 = 'OK', 
+                     button2 = nil, 
+                     button3 = nil}
 end

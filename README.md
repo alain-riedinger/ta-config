@@ -110,3 +110,13 @@ becomes:
 |vallll11 | val12    | vvval13|
 |val21    | vaaaal22 | val23  |
 ```
+
+## Migrate to release 12
+
+Migration to release 12, starting from 12.0, has been a serious challenge:
+- several API breaker
+- undocumented changes (or my eyes didn't spot the right places in the documentation...
+- removed or changed events
+
+Finally I managed to produce a satisfying set of configuration + scripts.  
+tested on **TextAdept 12.5**

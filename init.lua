@@ -17,21 +17,15 @@
 Require the other modules
 ]]
 require('util')
-require('search')
-require('distraction_free')
-require('favourites')
-require('ctrl_tab_mru')
 require('french_helpers')
-require('highlighting')
-require('color_hint')
-require('enhanced')
+require('ctrl_tab_mru')
+require('favourites')
 require('text_format')
-
--- Correct bug of "AltGr+\" in TextAdept 11.4
--- [Windows version 11.4 (with German keyb. layout) comes seriously buggy · Issue #247 · orbitalquark/textadept · GitHub](https://github.com/orbitalquark/textadept/issues/247)
-if not WINDOWS then
-  keys['ctrl+alt+\\'] = nil
-end
+require('highlighting')
+require('distraction_free')
+require('color_hint')
+require('search')
+require('enhanced')
 
 --[[---------------------------------------------------------------------------------------
 Set theming
@@ -55,23 +49,29 @@ buffer.property['highlighting.color.hint'] = 1
 -- Editor settings
 view.caret_style = buffer.CARETSTYLE_LINE
 view.caret_width = 2
-view.caret_fore = 0x0000FF
-view.caret_line_visible = true
---view.caret_line_visible_always = true
---view.caret_line_back = 0x333333
---view.caret_line_back_alpha =
---view.caret_period = 0
+-- caret color is now defined in theme
+-- view.caret_line_visible = true
+-- view.caret_line_visible_always = true
+-- view.caret_line_back = 0x333333
+-- view.caret_line_back_alpha = 
+-- view.caret_period = 0
 
 -- Adapt auto-pairs to french language
 textadept.editing.auto_pairs = {[40] = ')', [91] = ']', [123] = '}', [34] = '"'}
 textadept.editing.typeover_chars = {[41] = 1, [93] = 1, [125] = 1, [34] = 1}
 
 --[[---------------------------------------------------------------------------------------
-Special behaviours for markdown and text lexers
+Snippets are located appart, for clarity's sake
 ]]
-events.connect(events.LEXER_LOADED, function(lexer)
-  if lexer == 'markdown' or
-     lexer == 'text' then
+require('snippets')
+
+--[[---------------------------------------------------------------------------------------
+Special behaviours depending on lexers
+]]
+events.connect(events.BUFFER_AFTER_SWITCH, function()
+  -- Special behaviours for markdown and text lexers
+  if buffer.lexer_language == 'markdown' or
+     buffer.lexer_language == 'text' then
     -- Request adapted behaviour for square key
     buffer.property['key.special.square'] = 'true'
     
@@ -88,66 +88,43 @@ events.connect(events.LEXER_LOADED, function(lexer)
   end
 
   -- Special behaviours for markdown
-  if lexer == 'markdown' then
+  if buffer.lexer_language == 'markdown' then
     -- Add a context menu for markdown tables formatting
     local context = textadept.menu.context_menu
-    local sub = context['My Context']
-    if sub['Tablify'] == nil then
-      table.insert(sub, 1, {'Tablify', function() TextFormat.tablify() end})
-    end
+	local sub = context['My Context']
+	if sub['Tablify'] == nil then
+	  table.insert(sub, 1, {'Tablify', function() TextFormat.tablify() end})
+	  table.insert(sub, 2, {''})
+	end
   end
 end)
 
---[[
-Markdown facilities:
-- a double click on a link
-]]
-events.connect(events.DOUBLE_CLICK,
-  function (position, line, modifiers)
-    if buffer.get_lexer(buffer, false) == 'markdown' then
-      if Util.land(modifiers, buffer.MOD_CTRL) == buffer.MOD_CTRL then 
-        local style = buffer.style_at[buffer.current_pos]
-        --local text = string.format("%s (%d)", buffer.name_of_style[style], style)
-        --Util.status(text)
-        if buffer.name_of_style(style) == 'link' then
-          local pos = buffer.current_pos
-          -- Search for trailing )
-          repeat
-            local char = buffer:text_range(pos, buffer:position_after(pos))
-            pos = pos + 1
-          until char == ')'
-          local pos_trailing = pos - 1
-          -- Search for leading (
-          repeat
-            local char = buffer:text_range(pos, buffer:position_after(pos))
-            pos = pos - 1
-          until char == '('
-          local pos_leading = pos + 1
-          -- Get the URL of the link
-          local url = buffer:text_range(pos_leading + 1, pos_trailing)
-          Util.status(url)
-          --[lua-users wiki: Scite Open Url](http://lua-users.org/wiki/SciteOpenUrl)
-          if string.match(url, "^http[s]*://.+") or
-             string.match(url, "^ftp://.+") or
-             string.match(url, "^www%..+") then
-            --os.execute("x-www-browser "..url.." &")
-            --os.execute("C:\\Program Files\\Mozilla Firefox\\firefox.exe "..url.." &")
-            os.execute('start /b "" "'..url..'"')
-          end
-        end
-      end
-    end
-  end)
-  
+
 --[[---------------------------------------------------------------------------------------
 Customizations of user inputs:
-- menus
 - shorcuts
 ]]
+
+-- Sample shortcut: here for Ctrl+F12
+keys['ctrl+f12'] = function()
+  Util.debug('Shortcut sample!!!')
+end
 
 -- Ctrl+F : searches for current word, if any
 keys['ctrl+f'] = function()
   Search.preload_search_ui()
+end
+
+-- No more by default since release 12.x
+-- F3 : search for the next occurence
+-- Shift+F3 : search for the previous occurence
+keys['f3'] = function()
+  Util.trace("F3")
+  ui.find.find_next()
+end
+keys['shift+f3'] = function()
+  Util.trace("Shift+F3")
+  ui.find.find_prev()
 end
 
 -- Ctrl+F3 : searches for next occurence of current word, if any
@@ -194,17 +171,23 @@ keys['ctrl+_'] = function()
   end
 end
 
--- Sample shortcut: here for Ctrl+F12
-keys['ctrl+f12'] = function()
-  --ui.dialogs.filteredlist{title = 'Title', columns = {'Foo', 'Bar'}, items = {'a', 'b', 'c', 'd'}} 
-  --ui.statusbar_text = tostring(Util.get_current_word())
-  --Util.editor_mark_text_alpha(4, buffer.current_pos, 10, '0x00AA00', 30, 192)
-  --Util.editor_mark_text_alpha(5, buffer.current_pos, 10, '0x0000AA', 30, 192)
-  --Util.is_color('function')
-  --Util.is_color('0xFFEEDD')
-  --Util.is_color('0xBBGGRR')
-  Util.debug('Shortcut sample!!!')
+-- Disable weird AltGr false behavior on Windows
+if WIN32 then
+  keys['ctrl+alt+|'] = nil		-- for ALtGr |  6
+  keys['ctrl+alt+_'] = nil		-- for ALtGr \  8
 end
+
+-- Ctrl+D : duplicate current line
+keys['ctrl+D'] = nil		-- Don't like the default key ctrl+shift+d, better ctrl+d like all other editors
+keys['ctrl+d'] = function()
+  buffer:selection_duplicate()
+end
+
+
+--[[---------------------------------------------------------------------------------------
+Customizations of user inputs:
+- menus
+]]
 
 -- Example of menu bar extension
 local SEPARATOR = {''}
@@ -220,7 +203,13 @@ tools[#tools + 1] = my_tools_menu
 -- Example of tab context menu
 local my_tab_context_menu = {
   title = 'My Tab Context',
-  {'Copy filename', function() buffer.copy_text(_G.buffer, _G.buffer.filename) end},
+  {'Copy path', function() 
+      if WIN32 then
+        buffer:copy_text(buffer.filename:match("(.*\\)"))
+	  else
+        buffer:copy_text(buffer.filename:match("(.*/)"))
+	  end
+	end},
   {'Item 2', function() local j = 1 end}
 }
 local tab_context = textadept.menu.tab_context_menu
@@ -238,9 +227,40 @@ context[#context + 1] = SEPARATOR
 context[#context + 1] = my_context_menu
 
 --[[
-Fake function for testing menus and shortcuts actions
+Markdown facilities:
+- a double click on a link
 ]]
-function test()
-  Util.debug('test - BEGIN')
-  Util.debug('test - END')
-end
+events.connect(events.DOUBLE_CLICK, function (position, line, modifiers)
+  if buffer.lexer_language == 'markdown' then
+    if Util.land(modifiers, view.MOD_CTRL) == view.MOD_CTRL then 
+      local style = buffer.style_at[buffer.current_pos]
+      local text = string.format("%s (%d)", buffer:name_of_style(style), style)
+      if buffer:name_of_style(style) == 'link' then
+        local pos = buffer.current_pos
+        -- Search for trailing )
+        repeat
+          local char = buffer:text_range(pos, buffer:position_after(pos))
+          pos = pos + 1
+        until char == ')'
+        local pos_trailing = pos - 1
+        -- Search for leading (
+        repeat
+          local char = buffer:text_range(pos, buffer:position_after(pos))
+          pos = pos - 1
+        until char == '('
+        local pos_leading = pos + 1
+        -- Get the URL of the link
+        local url = buffer:text_range(pos_leading + 1, pos_trailing)
+        Util.status(url)
+        --[lua-users wiki: Scite Open Url](http://lua-users.org/wiki/SciteOpenUrl)
+        if string.match(url, "^http[s]*://.+") or
+           string.match(url, "^ftp://.+") or
+           string.match(url, "^www%..+") then
+		  if WIN32 then
+            os.execute('start /b "" "'..url..'"')
+		  end
+        end
+      end
+    end
+  end
+end)

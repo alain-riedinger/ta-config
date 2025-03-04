@@ -5,16 +5,24 @@
 -- Table bearing the different methods
 Util = {}
 
+-- For tracing on a TCP port: change port if needed
+require('trace')
+Trace.init("127.0.0.1", 6060)
+
 --[[---------------------------------------------------------------------------------------
 For debugging and tracing
 ]]
 -- In a new buffer called 'Debug'
 function Util.debug(msg)
-  ui._print('Debug', msg)
+  ui.print('Debug', msg)
 end
 -- In the Status Bar: single line only
 function Util.status(msg)
   ui.statusbar_text = msg
+end
+-- On a TCP port
+function Util.trace(msg)
+  Trace.trace(msg)
 end
 
 --[[---------------------------------------------------------------------------------------
@@ -74,6 +82,7 @@ function Util.editor_mark_text_colour(style_number, start, length, color)
   buffer.indicator_current = style_number
   view.indic_style[style_number] = view.INDIC_COMPOSITIONTHICK 
   view.indic_fore[style_number] = color
+  view.indic_outline_alpha[style_number] = 255
   buffer.indicator_fill_range(buffer, start, length)
   buffer.indicator_current = current_mark_number
 end
@@ -184,3 +193,13 @@ function Util.land(x,y)
   return result
 end
 
+--[[---------------------------------------------------------------------------------------
+Features for tables
+]]
+function Util.TableLen(tbl)
+  local getN = 0
+  for n in pairs(tbl) do 
+    getN = getN + 1 
+  end
+  return getN
+end

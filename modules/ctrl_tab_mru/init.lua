@@ -14,6 +14,9 @@
 -- 4   4   4-  3   3^  4
 -- 5   5   5   5-  4^  5
 --
+
+From version 12, an ugly hack on events.KEYS is needed for this script to work !
+- due to events.KEYPRESS new way of processing
 ]]
 
 local Util = Util
@@ -61,13 +64,7 @@ local function mru_ctrl_tab_handler(shift)
   end
 
   local right= nil
-  --Project module? check current view and goto files view before handling control+tab
-  if Proj then
-    if Proj.goto_filesview() then return end  --exit if the view changed
-    --in the right panel: only switch to another right marked file
-    if _VIEWS[view] == Proj.get_projview(Proj.PRJV_FILES_2) then right= true end
-  end
-
+  
   if ctrl_key_down then
     --CONTROL key was pressed before 'this' TAB
     --START A NEW SWAP CYCLE
@@ -117,28 +114,26 @@ local function mru_ctrl_tab_handler(shift)
   until mr._project_select == nil and (mr._type == nil or mr._type == Util.UNTITLED_TEXT) and mr._right_side == right
 
   --activate the buffer in the TOP of the MRU list
-  --Project module? change to left/right files view if needed (without project: 1/2, with project: 2/4)
   local newb= mru_buff[1]
-  if Proj then
-    Proj.goto_filesview(newb._right_side and Proj.FILEPANEL_RIGHT or Proj.FILEPANEL_LEFT)
-  else
-    --no project module: view #2 is the right_side panel
-    if newb._right_side then
-      if #_VIEWS == 1 then
-        view:split(true)
-      end
-      if _VIEWS[view] == 1 then Util.goto_view(2) end
-    else --view #1 is the left/only panel
-      if _VIEWS[view] ~= 1 then Util.goto_view(1) end
+  if newb._right_side then
+    if #_VIEWS == 1 then
+      view:split(true)
     end
+    if _VIEWS[view] == 1 then Util.goto_view(2) end
+  else --view #1 is the left/only panel
+    if _VIEWS[view] ~= 1 then Util.goto_view(1) end
   end
   Util.goto_buffer(newb)
 end
 
-events_connect(events.KEYPRESS, function(code, shift, control, alt, meta)
-  --control key pressed? (left=65507=FFE3, right=65508=FFE4)
-  if code == 0xFFE3 or code == 0xFFE4 then
+-- Ugly hack on undocumented events.KEY (seen in core/keys.lua)
+-- instead of events.KEYPRESS that is now highlevel and does not signal CTRL
+events_connect(events.KEY, function(code, modifiers)
+  -- control key pressed? (left=65507=FFE3, right=65508=FFE4)
+  -- Values for code are shifted to 2^24 range ?!?!
+  if code == 16777249 then
     ctrl_key_down = true
+    return true
   end
 end )
 
@@ -205,10 +200,5 @@ end
 --------------------------------------------------------------
 -- Control+TAB            goto next MRU buffer
 -- Control+Shift+TAB      goto prev MRU buffer
-if actions then
-  actions.add("next_mru_buffer", 'Next MRU buffer', function() mru_ctrl_tab_handler(false) end, "ctrl+\t")
-  actions.add("prev_mru_buffer", 'Prev MRU buffer', function() mru_ctrl_tab_handler(true)  end, "ctrl+shift+\t")
-else
-  keys['ctrl+\t'] = function() mru_ctrl_tab_handler(false) end
-  keys['ctrl+shift+\t']= function() mru_ctrl_tab_handler(true)  end
-end
+keys['ctrl+\t'] = function() mru_ctrl_tab_handler(false) end
+keys['ctrl+shift+\t']= function() mru_ctrl_tab_handler(true)  end

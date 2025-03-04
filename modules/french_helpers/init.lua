@@ -13,9 +13,9 @@ textadept.editing.typeover_chars = {[41] = 1, [93] = 1, [125] = 1, [34] = 1}
 --[[---------------------------------------------------------------------------------------
 Only change key for markdown and text
 ]]
-events.connect(events.LEXER_LOADED, function(lexer)
-  if lexer == 'markdown' or
-     lexer == 'text' then
+events.connect(events.BUFFER_AFTER_SWITCH, function()
+  if buffer.lexer_language == 'markdown' or
+     buffer.lexer_language == 'text' then
     buffer.property['key.special.square'] = 'true'
   else
     buffer.property['key.special.square'] = 'false'
@@ -28,32 +28,21 @@ Adaptation to french keyboard
 - "²" key transformed to back quote
 ]]
 events.connect(events.KEYPRESS, 
-  function (code, shift, control, alt, meta, caps_lock)
-    if buffer.property['key.special.square'] == 'true' and code == 178 then -- the tiny "2" (square)
-      if not shift and 
-         not control and 
-         not alt and
-         not meta and
-         not caps_lock then
-        buffer:replace_sel('`')
-        return true
-      elseif shift and 
-         not control and 
-         not alt and
-         not meta and
-         not caps_lock then
-        buffer:replace_sel('```')
-        return true
-      elseif not shift and 
-         control and 
-         not alt and
-         not meta and
-         not caps_lock then
+  function (key)
+	-- Key character is the last of the string
+    if buffer.property['key.special.square'] == 'true' and 
+	   string.byte(string.sub(key,string.len(key))) == 178 then -- the tiny "2" (square)
+	  -- Beware: shift has no effect on square key and is not detected !
+	  if string.sub(key, 0, string.len('ctrl')) == 'ctrl' then
+	    -- Backquote current word or selection
         local quote_start, quote_end = Util.get_current_sel_pos()
         if quote_start < quote_end then
           Util.quote_text('`', quote_start, quote_end)
         end
-        return true
-      end
-    end
+	  else
+	    -- Display a backquote
+  	    buffer:replace_sel('`')
+	  end
+	  return true
+	end
   end)
