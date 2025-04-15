@@ -204,12 +204,17 @@ tools[#tools + 1] = my_tools_menu
 local my_tab_context_menu = {
   title = 'My Tab Context',
   {'Copy path', function() 
+      buffer:copy_text(buffer.filename)
+    end},
+  {'Explore path', function()
       if WIN32 then
-        buffer:copy_text(buffer.filename:match("(.*\\)"))
-	  else
-        buffer:copy_text(buffer.filename:match("(.*/)"))
-	  end
-	end},
+        -- Windows - Opens in dir of file and selects it
+        os.spawn('explorer /select,"'..buffer.filename..'"', print)
+      else
+        -- Linux - Opens file dir
+        os.spawn('nautilus "'..buffer.filename:match("(.*/)")..'"', print)
+      end
+    end},
   {'Item 2', function() local j = 1 end}
 }
 local tab_context = textadept.menu.tab_context_menu
