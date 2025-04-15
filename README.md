@@ -81,10 +81,11 @@ Distraction free mode is composed of:
 - menu bar is hidden
 This functionality works as a toggle from and to this mode.
 
-## Copy file path
+## File helpers
 
 Accessible from the tab menu:
 - copies the full path of the file opened in the buffer
+- opens the explorer in the directory of the current file
 
 ## Text statistics
 
